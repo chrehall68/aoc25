@@ -1,6 +1,7 @@
 use std::env;
 mod day1;
 mod day2;
+mod day3;
 fn main() {
     let args: Vec<String> = env::args().collect();
     println!("AOC 2025!");
@@ -11,6 +12,7 @@ fn main() {
     match day {
         1 => day1::driver(),
         2 => day2::driver(),
+        3 => day3::driver(),
         _ => println!("No match!"),
     }
 }
