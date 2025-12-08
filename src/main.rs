@@ -1,7 +1,16 @@
-use crate::day1::driver;
-
+use std::env;
 mod day1;
+mod day2;
 fn main() {
+    let args: Vec<String> = env::args().collect();
     println!("AOC 2025!");
-    driver();
+    if args.len() < 2 {
+        panic!("Expected the day to run!");
+    }
+    let day: i32 = args[1].parse().expect("Failed parsing day");
+    match day {
+        1 => day1::driver(),
+        2 => day2::driver(),
+        _ => println!("No match!"),
+    }
 }
