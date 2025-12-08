@@ -13,27 +13,35 @@ fn get_inp() -> Vec<String> {
     res
 }
 
-fn part1(banks: &Vec<String>) {
-    let total: i32 = banks
+// returns the sum of the largest k-subsequence in each bank
+fn sum_max(banks: &Vec<String>, k: usize) -> i64 {
+    banks
         .iter()
         .map(|bank| {
-            // find max in everything up to last char
-            let first_max = bank[..bank.len() - 1]
-                .chars()
-                .enumerate()
-                // compare by number first, then smaller idx (gives max room in remaining)
-                .max_by(|(i1, v1), (i2, v2)| (v1, -(*i1 as i32)).cmp(&(v2, -(*i2 as i32))))
-                .unwrap();
-            // then find max in remaining
-            let second_max = bank[first_max.0 + 1..].chars().max().unwrap();
-            let worth_str = format!("{}{}", first_max.1, second_max);
-            let worth = worth_str.parse::<i32>().unwrap();
+            let mut start = 0;
+            let mut worth_str = String::new();
+            for i in 0..k {
+                // find max in remaining, leaving space for next chars
+                let next_chars: usize = k - i - 1;
+                let max = bank[start..bank.len() - next_chars]
+                    .chars()
+                    .enumerate()
+                    // compare by number first, then smaller idx (gives max room in remaining)
+                    .max_by(|(i1, v1), (i2, v2)| (v1, -(*i1 as i32)).cmp(&(v2, -(*i2 as i32))))
+                    .unwrap();
+                start += max.0 + 1;
+                worth_str.push(max.1);
+            }
+            let worth: i64 = worth_str.parse().unwrap();
             worth
         })
-        .sum();
-    println!("{total}");
+        .sum()
 }
+
 pub fn driver() {
     let banks = get_inp();
-    part1(&banks);
+    // part 1
+    println!("{}", sum_max(&banks, 2));
+    // part 2
+    println!("{}", sum_max(&banks, 12));
 }
