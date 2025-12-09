@@ -62,10 +62,12 @@ pub fn driver() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const STR: &str = "123 328  51 64 
- 45 64  387 23 
-  6 98  215 314
-*   +   *   +  ";
+    use indoc::indoc;
+    const STR: &str = indoc! {"
+        123 328  51 64 
+         45 64  387 23 
+          6 98  215 314
+        *   +   *   +  "};
 
     #[test]
     fn test_get_inp() {
