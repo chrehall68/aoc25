@@ -1,5 +1,12 @@
 use std::io;
 
+#[derive(Debug, Clone, Copy)]
+struct Rect {
+    left: i64,
+    right: i64,
+    top: i64,
+    bottom: i64,
+}
 fn get_inp(mut reader: impl io::BufRead) -> Vec<(i64, i64)> {
     let mut inp = String::new();
     let mut res = Vec::new();
@@ -12,31 +19,20 @@ fn get_inp(mut reader: impl io::BufRead) -> Vec<(i64, i64)> {
     }
     res
 }
-fn part1(inp: &Vec<(i64, i64)>) -> i64 {
-    let mut best = 0;
-    let mut smallest = i64::MAX;
-    for i in 0..inp.len() {
-        for j in i + 1..inp.len() {
-            let dx = (inp[i].0 - inp[j].0).abs() + 1;
-            let dy = (inp[i].1 - inp[j].1).abs() + 1;
-            best = best.max(dx * dy);
-            smallest = smallest.min(dx * dy);
-        }
-    }
-    assert!(smallest > 2);
-    best
-}
-fn rectangle_intersects(rect: (i64, i64, i64, i64), p1: (i64, i64), p2: (i64, i64)) -> bool {
-    let (left, bottom, right, top) = rect;
+fn rectangle_intersects(rect: Rect, p1: (i64, i64), p2: (i64, i64)) -> bool {
+    let Rect {
+        left,
+        right,
+        top,
+        bottom,
+    } = rect;
     let (x1, y1) = p1;
     let (x2, y2) = p2;
     if y1 != y2 {
         // vertical line
         // so check if it crosses the rectangle's top or bottom
-        let (lower, upper) = if y1 < y2 { (y1, y2) } else { (y2, y1) };
-        return ((lower <= bottom && upper > bottom) || (lower < top && upper >= top))
-            && x1 > left
-            && x1 < right;
+        let (b, t) = if y1 < y2 { (y1, y2) } else { (y2, y1) };
+        return ((b <= bottom && t > bottom) || (b < top && t >= top)) && x1 > left && x1 < right;
     } else {
         // horizontal line
         // check if crosses the rectangle's left or right
@@ -56,38 +52,29 @@ fn polygon_contains(polygon: &Vec<(i64, i64)>, point: (i64, i64)) -> bool {
     }
     crosses % 2 == 1
 }
-fn part2(inp: &Vec<(i64, i64)>) -> i64 {
-    // an item can act as either top left or bottom left
-    // only 500 items, so O(N**3) works
-    // also, there is at least one green between items
-    // so this works out
+fn validator(rect: Rect, points: &Vec<(i64, i64)>) -> bool {
+    // check that the center of the rectangle is in the polygon
+    // and check that no polygon lines intersect the rectangle
+    // technically this assumes that lines aren't optimal
+    // but that works since there's always at least one green between
+    let center = ((rect.left + rect.right) / 2, (rect.bottom + rect.top) / 2);
+    let intersects = (0..points.len())
+        .any(|i| rectangle_intersects(rect, points[i], points[(i + 1) % points.len()]));
+    polygon_contains(points, center) && !intersects
+}
+fn max_valid_pair(inp: &Vec<(i64, i64)>, validator: impl Fn(Rect) -> bool) -> i64 {
     let mut best = 0;
     for i in 0..inp.len() {
-        for j in 0..inp.len() {
-            // technically this assumes that lines aren't optimal
-            // but that works since there's always at least one green between
-            if i != j && inp[i].1 < inp[j].1 {
-                // try pairing them together
-                // they form a valid rectangle iff:
-                // - no polygon lines intersect the rectangle
-                // - the center of the rectangle is in the polygon
-                let top = inp[j].1;
-                let bottom = inp[i].1;
-                let left = inp[i].0.min(inp[j].0);
-                let right = inp[i].0.max(inp[j].0);
-                // first, check that no corners are strictly inside the rectangle
-                let safe = (0..inp.len()).all(|idx| {
-                    !rectangle_intersects(
-                        (left, bottom, right, top),
-                        inp[idx],
-                        inp[(idx + 1) % inp.len()],
-                    )
-                });
-                // then check the center
-                let center = ((left + right) / 2, (top + bottom) / 2);
-                if safe && polygon_contains(inp, center) {
-                    let value = (right - left + 1) * (top - bottom + 1);
-                    best = best.max(value);
+        for j in i + 1..inp.len() {
+            if i != j {
+                let r = Rect {
+                    top: inp[i].1.max(inp[j].1),
+                    bottom: inp[i].1.min(inp[j].1),
+                    left: inp[i].0.min(inp[j].0),
+                    right: inp[i].0.max(inp[j].0),
+                };
+                if validator(r) {
+                    best = best.max((r.right - r.left + 1) * (r.top - r.bottom + 1));
                 }
             }
         }
@@ -97,8 +84,8 @@ fn part2(inp: &Vec<(i64, i64)>) -> i64 {
 }
 pub fn driver() {
     let inp = get_inp(io::stdin().lock());
-    println!("{}", part1(&inp));
-    println!("{}", part2(&inp));
+    println!("{}", max_valid_pair(&inp, |_| true));
+    println!("{}", max_valid_pair(&inp, |r| validator(r, &inp)));
 }
 
 #[cfg(test)]
@@ -120,11 +107,11 @@ mod tests {
     #[test]
     fn test_part1() {
         let inp = get_inp(INP.as_bytes());
-        assert_eq!(part1(&inp), 50);
+        assert_eq!(max_valid_pair(&inp, |_| true), 50);
     }
     #[test]
     fn test_part2() {
         let inp = get_inp(INP.as_bytes());
-        assert_eq!(part2(&inp), 24);
+        assert_eq!(max_valid_pair(&inp, |r| validator(r, &inp)), 24);
     }
 }
