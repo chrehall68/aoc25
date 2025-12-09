@@ -48,7 +48,7 @@ fn indegrees(rows: &Vec<String>) -> HashMap<(i32, i32), i32> {
     res
 }
 
-fn reachable(rows: &Vec<String>, mut indegrees: HashMap<(i32, i32), i32>) -> usize {
+fn reachable(mut indegrees: HashMap<(i32, i32), i32>) -> usize {
     // basically topsort
     // but instead of allowing once indegree == 0,
     // we now allow once indegree < 4
@@ -86,7 +86,7 @@ pub fn driver() {
     let rows = get_inp();
     let starter = indegrees(&rows);
     println!("{}", starter.values().filter(|v| **v < 4).count());
-    println!("{}", reachable(&rows, starter));
+    println!("{}", reachable(starter));
 }
 
 #[cfg(test)]
@@ -117,7 +117,7 @@ mod tests {
     fn test_part2_example() {
         let v = Vec::from(ROWS).into_iter().map(|s| s.to_owned()).collect();
         let starter = indegrees(&v);
-        let res = reachable(&v, starter);
+        let res = reachable(starter);
         assert_eq!(res, 43);
     }
 }
