@@ -4,6 +4,7 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 fn main() {
     let args: Vec<String> = env::args().collect();
     println!("AOC 2025!");
@@ -17,6 +18,7 @@ fn main() {
         3 => day3::driver(),
         4 => day4::driver(),
         5 => day5::driver(),
+        6 => day6::driver(),
         _ => println!("No match!"),
     }
 }
