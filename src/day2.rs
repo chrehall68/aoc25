@@ -37,7 +37,7 @@ fn count_reps(num: i64) -> i32 {
     1
 }
 
-fn sum_if<F>(ranges: &Vec<(i64, i64)>, condition: F)
+fn sum_if<F>(ranges: &Vec<(i64, i64)>, condition: F) -> i64
 where
     F: Fn(i32) -> bool,
 {
@@ -49,13 +49,49 @@ where
             }
         }
     });
-    println!("{count}")
+    count
 }
 
 pub fn driver() {
     let ranges = get_inp();
     // part 1
-    sum_if(&ranges, |count| count == 2);
+    println!("{}", sum_if(&ranges, |count| count == 2));
     // part 2
-    sum_if(&ranges, |count| count >= 2);
+    println!("{}", sum_if(&ranges, |count| count >= 2));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const RANGES: [(i64, i64); 11] = [
+        (11, 22),
+        (95, 115),
+        (998, 1012),
+        (1188511880, 1188511890),
+        (222220, 222224),
+        (1698522, 1698528),
+        (446443, 446449),
+        (38593856, 38593862),
+        (565653, 565659),
+        (824824821, 824824827),
+        (2121212118, 2121212124),
+    ];
+
+    #[test]
+    fn test_count_reps() {
+        assert_eq!(count_reps(123), 1);
+        assert_eq!(count_reps(1212), 2);
+        assert_eq!(count_reps(1221), 1);
+        assert_eq!(count_reps(213213213), 3);
+    }
+
+    #[test]
+    fn test_part1_example() {
+        assert_eq!(sum_if(&Vec::from(&RANGES), |count| count == 2), 1227775554);
+    }
+    #[test]
+    fn test_part2_example() {
+        assert_eq!(sum_if(&Vec::from(&RANGES), |count| count >= 2), 4174379265)
+    }
 }

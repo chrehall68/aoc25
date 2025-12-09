@@ -45,3 +45,33 @@ pub fn driver() {
     // part 2
     println!("{}", sum_max(&banks, 12));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const JOLTAGES: [&str; 4] = [
+        "987654321111111",
+        "811111111111119",
+        "234234234234278",
+        "818181911112111",
+    ];
+
+    #[test]
+    fn test_part1_example() {
+        let banks = Vec::from(JOLTAGES)
+            .into_iter()
+            .map(|s| s.to_owned())
+            .collect();
+        assert_eq!(sum_max(&banks, 2), 357);
+    }
+
+    #[test]
+    fn test_part2_example() {
+        let banks = Vec::from(JOLTAGES)
+            .into_iter()
+            .map(|s| s.to_owned())
+            .collect();
+        assert_eq!(sum_max(&banks, 12), 3121910778619);
+    }
+}
