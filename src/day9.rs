@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::io;
 
 #[derive(Debug, Clone, Copy)]
@@ -63,24 +64,23 @@ fn validator(rect: Rect, points: &Vec<(i64, i64)>) -> bool {
     polygon_contains(points, center) && !intersects
 }
 fn max_valid_pair(inp: &Vec<(i64, i64)>, validator: impl Fn(Rect) -> bool) -> i64 {
-    let mut best = 0;
-    for i in 0..inp.len() {
-        for j in i + 1..inp.len() {
-            if i != j {
-                let r = Rect {
-                    top: inp[i].1.max(inp[j].1),
-                    bottom: inp[i].1.min(inp[j].1),
-                    left: inp[i].0.min(inp[j].0),
-                    right: inp[i].0.max(inp[j].0),
-                };
-                if validator(r) {
-                    best = best.max((r.right - r.left + 1) * (r.top - r.bottom + 1));
-                }
+    inp.iter()
+        .tuple_combinations()
+        .filter_map(|(&(x1, y1), &(x2, y2))| {
+            let r = Rect {
+                top: y1.max(y2),
+                bottom: y1.min(y2),
+                left: x1.min(x2),
+                right: x1.max(x2),
+            };
+            if validator(r) {
+                Some((r.right - r.left + 1) * (r.top - r.bottom + 1))
+            } else {
+                None
             }
-        }
-    }
-
-    best
+        })
+        .max()
+        .unwrap_or(0)
 }
 pub fn driver() {
     let inp = get_inp(io::stdin().lock());
