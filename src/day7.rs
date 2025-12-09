@@ -11,36 +11,71 @@ fn get_inp(mut reader: impl io::BufRead) -> Vec<String> {
     }
     res
 }
-fn part1(inp: Vec<String>) -> i32 {
-    let mut total = 0;
+fn split(inp: Vec<String>) -> (i32, i64) {
+    let mut splits = 0;
     let mut prev_row = Vec::new();
     for c in inp[0].as_bytes() {
-        prev_row.push(*c == b'S');
+        prev_row.push((*c == b'S') as i64);
     }
-    let mut cur_row = vec![false; inp[0].len()];
+    let mut cur_row = vec![0; inp[0].len()];
 
     for line in inp.iter().skip(1) {
-        cur_row.fill(false);
+        cur_row.fill(0);
         for (i, c) in line.as_bytes().iter().enumerate() {
-            if prev_row[i] {
+            if prev_row[i] != 0 {
                 if *c == b'^' {
                     if i > 0 {
-                        cur_row[i - 1] = true;
+                        cur_row[i - 1] += prev_row[i];
                     }
                     if i + 1 < line.len() {
-                        cur_row[i + 1] = true;
+                        cur_row[i + 1] = prev_row[i];
                     }
-                    total += 1;
+                    splits += 1;
                 } else {
-                    cur_row[i] = true;
+                    cur_row[i] += prev_row[i];
                 }
             }
         }
         swap(&mut cur_row, &mut prev_row);
     }
-    total
+    (splits, prev_row.iter().sum())
 }
 pub fn driver() {
     let inp = get_inp(io::stdin().lock());
-    println!("{}", part1(inp));
+    let (p1, p2) = split(inp);
+    println!("{}", p1);
+    println!("{}", p2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use indoc::indoc;
+
+    const INP: &str = indoc! {"
+        .......S.......
+        ...............
+        .......^.......
+        ...............
+        ......^.^......
+        ...............
+        .....^.^.^.....
+        ...............
+        ....^.^...^....
+        ...............
+        ...^.^...^.^...
+        ...............
+        ..^...^.....^..
+        ...............
+        .^.^.^.^.^...^.
+        ..............."
+    };
+
+    #[test]
+    fn test_parts() {
+        let inp = get_inp(io::Cursor::new(INP));
+        let (p1, p2) = split(inp);
+        assert_eq!(p1, 21);
+        assert_eq!(p2, 40);
+    }
 }
