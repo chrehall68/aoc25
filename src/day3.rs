@@ -18,20 +18,16 @@ fn sum_max(banks: &Vec<String>, k: usize) -> i64 {
     banks
         .iter()
         .map(|bank| {
-            let mut start = 0;
-            let mut worth_str = String::new();
-            for i in 0..k {
-                // find max in remaining, leaving space for next chars
-                let next_chars: usize = k - i - 1;
-                let max = bank[start..bank.len() - next_chars]
-                    .chars()
-                    .enumerate()
-                    // compare by number first, then smaller idx (gives max room in remaining)
-                    .max_by(|(i1, v1), (i2, v2)| (v1, -(*i1 as i32)).cmp(&(v2, -(*i2 as i32))))
-                    .unwrap();
-                start += max.0 + 1;
-                worth_str.push(max.1);
-            }
+            let mut stack = Vec::new();
+            bank.char_indices().for_each(|(i, c)| {
+                let remaining = bank.len() - i;
+                while !stack.is_empty() && remaining + stack.len() > k && stack[stack.len() - 1] < c
+                {
+                    stack.pop();
+                }
+                stack.push(c);
+            });
+            let worth_str: String = stack.iter().take(k).collect();
             let worth: i64 = worth_str.parse().unwrap();
             worth
         })
