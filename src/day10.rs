@@ -1,3 +1,4 @@
+use good_lp::*;
 use std::{
     collections::HashMap,
     io::{self, stdin},
@@ -73,8 +74,42 @@ fn part1(cases: &Vec<(i32, Vec<i32>, Vec<i32>)>) -> i32 {
         .map(|(desired, buttons, _)| min_presses(*desired, buttons))
         .sum()
 }
+fn solve_lp(buttons: &Vec<i32>, junctions: &Vec<i32>) -> i32 {
+    let mut vars = variables!();
+    let var_vec: Vec<_> = (0..buttons.len())
+        .map(|_| vars.add(variable().min(0).integer()))
+        .collect();
+    let constraints: Vec<Constraint> = junctions
+        .iter()
+        .enumerate()
+        .map(|(i, &desired)| {
+            let mut lhs: Expression = 0.into();
+            for (button_idx, &button) in buttons.iter().enumerate() {
+                if button & (1 << i) != 0 {
+                    lhs += var_vec[button_idx]
+                }
+            }
+            lhs.eq(desired)
+        })
+        .collect();
+    let objective: Expression = var_vec.iter().sum();
+    let solution = vars
+        .minimise(&objective)
+        .using(default_solver)
+        .with_all(constraints)
+        .solve()
+        .unwrap();
+    solution.eval(&objective).round() as i32
+}
+fn part2(cases: &Vec<(i32, Vec<i32>, Vec<i32>)>) -> i32 {
+    cases
+        .iter()
+        .map(|(_, buttons, junctions)| solve_lp(buttons, junctions))
+        .sum()
+}
 
 pub fn driver() {
     let inp = get_inp(stdin().lock());
     println!("{}", part1(&inp));
+    println!("{}", part2(&inp));
 }
