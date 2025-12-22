@@ -2,6 +2,7 @@ use std::env;
 mod day1;
 mod day10;
 mod day11;
+mod day12;
 mod day2;
 mod day3;
 mod day4;
@@ -29,6 +30,7 @@ fn main() {
         9 => day9::driver(),
         10 => day10::driver(),
         11 => day11::driver(),
+        12 => day12::driver(),
         _ => println!("No match!"),
     }
 }
