@@ -37,9 +37,11 @@ fn part2(transforms: &Vec<(i32, i32)>) {
     transforms.iter().for_each(|(dir, amt)| {
         // if it's negative, use the negative representation
         let repr = if *dir == -1 { (100 - pos) % 100 } else { pos };
-        count += (repr + amt) / 100;
-        pos += amt * dir;
-        pos = (pos % 100 + 100) % 100; // convert to + representation
+        let sum = repr+amt;
+        let rem = sum % 100;
+        count += sum / 100;
+        // convert back to positive representation
+        pos = if *dir == -1 { (100 - rem) % 100 } else { rem };
     });
 
     println!("{count}");
